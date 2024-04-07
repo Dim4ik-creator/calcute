@@ -1,0 +1,55 @@
+body {
+    /* Используем только background-image с изображением */
+    background-image: url("C:\\Users\\Дмитрий\\VS\\web\\Front.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    transition: background 5s linear;
+}
+
+
+.calculator {
+    background-color: rgba(255, 255, 255, 0.2); /* Прозрачный цвет фона */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+#display {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 24px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+    text-align: left;
+    margin-left: -8px; /* Добавляем отступ слева */
+    outline: none;
+    border: none; /* Убираем рамку фокуса */
+}
+
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 5px;
+}
+
+button {
+    padding: 15px;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.2); /* Прозрачный цвет фона для кнопок */
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ccc;
+}
