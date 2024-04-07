@@ -1,28 +1,61 @@
 let display = document.getElementById('display');
-let isFirstInput = true;
+let isFirstInput = true; // Флаг для отслеживания первого ввода
+let isLastActionCalculate = false; // Флаг для отслеживания последнего действия
+let operatorEntered = false; // Флаг для отслеживания ввода оператора
 
 function appendValue(value) {
-    // Проверяем, если это первый ввод после очистки
-    if (display.value === '' && value === '0') {
-        return; // Игнорируем ввод 0 в начале строки
+    // Проверяем, было ли последнее действие вычислением
+    if (isLastActionCalculate) {
+        // Очищаем дисплей, если последнее действие было вычислением и ввод - цифра или десятичная точка
+        if (/[\d.]/.test(value)) {
+            display.value = '';
+            operatorEntered = false; // Сбрасываем флаг оператора
+        }
+        isLastActionCalculate = false;
     }
 
-    // Добавляем значение только если это цифра или оператор
+    // Проверяем, является ли ввод цифрой, оператором или десятичной точкой
     if (/[\d\/\*\-\+\^]/.test(value) || value === '.') {
-        display.value += value;
-        isFirstInput = false; // Устанавливаем флаг, что это не первый ввод
+        // Проверяем, является ли последний символ оператором, и текущий ввод также оператором
+        let lastChar = display.value.slice(-1);
+
+        if (/[\/*\-+\^]/.test(value)) {
+            if (operatorEntered) {
+                return; // Игнорируем ввод, если оператор уже введен
+            } else {
+                operatorEntered = true; // Устанавливаем флаг оператора
+            }
+        } else if (operatorEntered && /[\d.]/.test(lastChar) && /[\d.]/.test(value)) {
+            // Разрешаем ввод, если это цифра или десятичная точка, и оператор уже введен
+        } else if (operatorEntered) {
+            return; // Игнорируем ввод, если оператор уже введен и вводится другой оператор
+        }
+
+        display.value += value; // Добавляем значение к дисплею
+        isFirstInput = false; // Устанавливаем флаг, указывающий на то, что это не первый ввод
     }
 }
 
 function clearDisplay() {
     display.value = '';
-    isFirstInput = true; // Устанавливаем флаг, что это первый ввод после очистки
+    isFirstInput = true; // Устанавливаем флаг, указывающий на то, что это первый ввод после очистки
+    operatorEntered = false; // Сбрасываем флаг оператора
 }
 
 function deleteChar() {
-    display.value = display.value.slice(0, -1);
+    // Если значение дисплея "Ошибка", очищаем дисплей одним нажатием Backspace
+    if (display.value === 'Ошибка') {
+        display.value = '';
+    } else {
+        let lastChar = display.value.slice(-1);
+        if (/[\/*\-+\^]/.test(lastChar)) {
+            operatorEntered = false; // Сбрасываем флаг оператора при удалении оператора
+        }
+        display.value = display.value.slice(0, -1);
+    }
+
     if (display.value === '') {
-        isFirstInput = true; // Если после удаления последнего символа строка ввода пуста, устанавливаем флаг, что это первый ввод
+        isFirstInput = true; // Устанавливаем флаг, указывающий на то, что это первый ввод после удаления
     }
 }
 
@@ -37,17 +70,19 @@ function calculate() {
         try {
             display.value = eval(input);
         } catch (error) {
-            display.value = 'Error';
+            display.value = 'Ошибка';
         }
     }
+    isLastActionCalculate = true; // Устанавливаем флаг, указывающий на то, что последнее действие было вычислением
+    operatorEntered = false; // Сбрасываем флаг оператора после вычисления
 }
 
 function handleKeyPress(event) {
     let key = event.key;
 
-    // Если введенный символ - цифра, Backspace или Enter
+    // Проверяем, является ли нажатая клавиша цифрой, Backspace или Enter
     if (/^\d$/.test(key) || key === 'Backspace' || key === 'Enter') {
-        // Если это первый ввод и введенный символ не цифра, игнорируем его
+        // Игнорируем ввод, если это первый ввод и нажатая клавиша не является цифрой
         if (isFirstInput && !/^\d$/.test(key)) {
             event.preventDefault();
             return;
@@ -55,24 +90,30 @@ function handleKeyPress(event) {
 
         // Обрабатываем ввод в зависимости от нажатой клавиши
         if (key === 'Enter') {
-            calculate(); // Вызываем функцию calculate при нажатии Enter
+            calculate(); // Вызываем функцию calculate при нажатии клавиши Enter
         } else if (key === 'Backspace') {
-            deleteChar(); // Вызываем функцию deleteChar при нажатии Backspace
+            deleteChar(); // Вызываем функцию deleteChar при нажатии клавиши Backspace
         } else {
-            // Добавляем значение на дисплей
-            appendValue(key);
+            appendValue(key); // Добавляем значение к дисплею
         }
-    } else if (!isFirstInput && /[\/\*\-\+]/.test(key)) {
-        // Если введенный символ - оператор и перед ним уже не стоит оператор
+    } else if (!isFirstInput && /[\/\*\-\+\^]/.test(key)) {
+        // Обрабатываем ввод оператора, если это не первый ввод
         let currentValue = display.value;
         let lastChar = currentValue[currentValue.length - 1];
         if (/[\/\*\-\+\^]/.test(lastChar)) {
-            // Если последний символ - оператор, заменяем его на введенный
+            // Заменяем последний оператор новым оператором
             display.value = currentValue.slice(0, -1) + key;
         } else {
-            // Если последний символ не оператор, добавляем введенный оператор
-            appendValue(key);
+            appendValue(key); // Добавляем оператор к дисплею
         }
+    } else if (isLastActionCalculate && /[\/\*\-\+\^]/.test(key)) {
+        // Если последнее действие было вычислением и ввод - оператор
+        isLastActionCalculate = false;
+        appendValue(key); // Добавляем оператор к дисплею
+    } else if (isLastActionCalculate && /[\d.]/.test(key)) {
+        // Если последнее действие было вычислением и ввод - цифра или десятичная точка
+        display.value = key; // Заменяем дисплей новым вводом
+        isLastActionCalculate = false;
     } else {
         event.preventDefault(); // Предотвращаем ввод других символов
     }
