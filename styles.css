@@ -1,6 +1,6 @@
 body {
     /* Используем только background-image с изображением */
-    background-image: url("C:\\Users\\Дмитрий\\VS\\web\\calcute\\Front.jpg");
+    background-image: url("Front.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     margin: 0;
