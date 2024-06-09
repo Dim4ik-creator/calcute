@@ -2,6 +2,7 @@ let display = document.getElementById('display');
 let isFirstInput = true; // Флаг для отслеживания первого ввода
 let isLastActionCalculate = false; // Флаг для отслеживания последнего действия
 let operatorEntered = false; // Флаг для отслеживания ввода оператора
+let hasSecondNumber = false; // Флаг для отслеживания ввода второго числа
 
 function appendValue(value) {
     // Проверяем, было ли последнее действие вычислением
@@ -26,9 +27,10 @@ function appendValue(value) {
                 operatorEntered = true; // Устанавливаем флаг оператора
             }
         } else if (operatorEntered && /[\d.]/.test(lastChar) && /[\d.]/.test(value)) {
-            // Разрешаем ввод, если это цифра или десятичная точка, и оператор уже введен
-        } else if (operatorEntered) {
-            return; // Игнорируем ввод, если оператор уже введен и вводится другой оператор
+            // Если оператор уже введен и ввод - цифра или десятичная точка, разрешаем ввод
+            hasSecondNumber = true; // Устанавливаем флаг второго числа
+        } else if (operatorEntered && hasSecondNumber) {
+            return; // Игнорируем ввод, если уже введены оператор и второе число
         }
 
         display.value += value; // Добавляем значение к дисплею
@@ -40,6 +42,7 @@ function clearDisplay() {
     display.value = '';
     isFirstInput = true; // Устанавливаем флаг, указывающий на то, что это первый ввод после очистки
     operatorEntered = false; // Сбрасываем флаг оператора
+    hasSecondNumber = false; // Сбрасываем флаг второго числа
 }
 
 function deleteChar() {
@@ -50,6 +53,8 @@ function deleteChar() {
         let lastChar = display.value.slice(-1);
         if (/[\/*\-+\^]/.test(lastChar)) {
             operatorEntered = false; // Сбрасываем флаг оператора при удалении оператора
+        } else if (operatorEntered) {
+            hasSecondNumber = false; // Сбрасываем флаг второго числа при удалении числа после оператора
         }
         display.value = display.value.slice(0, -1);
     }
@@ -75,6 +80,7 @@ function calculate() {
     }
     isLastActionCalculate = true; // Устанавливаем флаг, указывающий на то, что последнее действие было вычислением
     operatorEntered = false; // Сбрасываем флаг оператора после вычисления
+    hasSecondNumber = false; // Сбрасываем флаг второго числа после вычисления
 }
 
 function handleKeyPress(event) {
